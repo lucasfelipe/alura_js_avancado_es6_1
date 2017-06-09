@@ -24,4 +24,8 @@ class Negociacao {
         return this._valor;
     }
 
+    isEquals(outraNegociacao) {
+        return this._data == outraNegociacao.data && this._valor == outraNegociacao.valor;
+    }
+
 }

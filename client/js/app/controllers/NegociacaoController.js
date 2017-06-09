@@ -17,29 +17,50 @@ class NegociacaoController {
             'texto');
 
         this._ordemAtual = '';
+
+        this._service = new NegociacoesService();
+
+        this._init();
+    }
+
+    _init() {
+        this._service
+            .lista()
+            .then(negociacoes =>
+                negociacoes.forEach(negociacao =>
+                    this._listaNegociacoes.adiciona(negociacao)))
+            .catch(error => this._mensagem.texto = error);
+
+        setInterval(() => {
+            this.importarNegociacoes();
+        }, 3000);
     }
 
     adiciona(event) {
         event.preventDefault();
 
-        try {
-            this._listaNegociacoes.adiciona(this._criaNegociacao());
-            this._mensagem.texto = "Negociação adicionada com sucesso";
-            this._limpaFormulario();
-        } catch (erro) {
-            this._mensagem.texto = erro;
-        }
+        let negociacao = this._criaNegociacao();
+        this._service
+            .cadastra(negociacao)
+            .then(mensagem => {
+                this._listaNegociacoes.adiciona(negociacao);
+                this._mensagem.texto = 'Negociação adicionada com sucesso.';
+                this._limpaFormulario();
+            }).catch(error => this._mensagem.texto = error);
     }
 
     apaga() {
-        this._listaNegociacoes.esvazia();
-        this._mensagem.texto = "Negociações apagadas com sucesso";
+        this._service
+            .apaga()
+            .then(mensagem => {
+                this._mensagem.texto = mensagem;
+                this._listaNegociacoes.esvazia();
+            }).catch(error => this._mensagem.texto = error);
     }
 
     importarNegociacoes() {
-        let service = new NegociacoesService();
-        service
-            .obterNegociacoes()
+        this._service
+            .importa(this._listaNegociacoes.negociacoes)
             .then(negociacoes => {
                 negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
                 this._mensagem.texto = 'Negociações do período importadas com sucesso';
@@ -58,8 +79,8 @@ class NegociacaoController {
     _criaNegociacao() {
         return new Negociacao(
             DateHelper.textoParaData(this._inputData.value),
-            this._inputQuantidade.value,
-            this._inputValor.value
+            parseInt(this._inputQuantidade.value),
+            parseFloat(this._inputValor.value)
         );
     }
 
