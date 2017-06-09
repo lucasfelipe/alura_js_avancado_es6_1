@@ -27,7 +27,7 @@ class HttpService {
         });
     }
 
-    postMessage(url, data) {
+    post(url, data) {
         return new Promise((resolve, reject) => {
             let xhr = new XMLHttpRequest();
             xhr.open('POST', url);
